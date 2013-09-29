@@ -5,6 +5,7 @@ class HelloWorldLayer < Joybox::Core::LayerColor
   def on_enter
     @monsters = []
     @projectiles = []
+    @monster_destroyed = 0
     window_size = CCDirector.sharedDirector.winSize
 
     player = Sprite.new(:file_name => 'arts/player.png')
@@ -15,9 +16,14 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     schedule('game_logic', :interval => 1.0)
     schedule('update')
 
+    background_audio = BackgroundAudio.new
+    background_audio.add(:audio => :background_music, :file_name => 'sounds/background-music-aac.caf')
+    background_audio.play(:background_music)
+
     on_touches_ended do |touches, event|
       shoot_projectile(touches)
     end
+
   end
 
   def game_logic
@@ -37,6 +43,11 @@ class HelloWorldLayer < Joybox::Core::LayerColor
       monsters_to_delete.each do |monster|
         @monsters.delete(monster)
         self.removeChild(monster)
+        @monster_destroyed += 1
+        if @monster_destroyed > 30
+          game_over_scene = GameOverLayer.scene_with_won(true)
+          Joybox.director.replaceScene(game_over_scene)
+        end
       end
 
       if monsters_to_delete.size > 0
@@ -78,6 +89,8 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     action_move_done = Callback.with do |node|
       @monsters.delete(node)
       node.removeFromParent
+      game_over_scene = GameOverLayer.scene_with_won(false)
+      Joybox.director.replaceScene(game_over_scene)
     end
 
     sequence_action = Sequence.with(:actions => [action_move, action_move_done])
@@ -126,5 +139,9 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     end
     sequence_action = Sequence.with(:actions => [action_move, action_move_done])
     projectile.run_action(sequence_action)
+
+    audio_effect = AudioEffect.new
+    audio_effect.add(:effect => :pew_pew_lei, :file_name => 'sounds/pew-pew-lei.caf')
+    audio_effect.play(:pew_pew_lei)
   end
 end
