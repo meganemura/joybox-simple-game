@@ -11,6 +11,10 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     self << player
 
     schedule('game_logic', :interval => 1)
+
+    on_touches_ended do |touches, event|
+      shoot_projectile(touches)
+    end
   end
 
   def game_logic
@@ -46,5 +50,46 @@ class HelloWorldLayer < Joybox::Core::LayerColor
 
     sequence_action = Sequence.with(:actions => [action_move, action_move_done])
     monster.run_action(sequence_action)
+  end
+
+  def shoot_projectile(touches)
+
+    # Choose one of the touches to work with
+    touch = touches.any_object
+    location = self.convertTouchToNodeSpace(touch)
+
+    # Set up initial location of projectile
+    window_size = CCDirector.sharedDirector.winSize
+    projectile = Sprite.new(:file_name => 'arts/projectile.png')
+    projectile.position = [20, window_size.height / 2]
+
+    # Determine offset of location to projectile
+    offset = location - projectile.position
+
+    # Bail out if you are shooting down or backwards
+    return if offset.x <= 0
+
+    # Ok to add now - we've double checked position
+    self << projectile
+
+    real_x = window_size.width + projectile.contentSize.width / 2
+    ratio = offset.y.to_f / offset.x
+    real_y = real_x * ratio + projectile.position.y
+    real_dest = [real_x, real_y]
+
+    # Determine the length of how far you're shooting
+    off_real_x = real_x - projectile.position.x
+    off_real_y = real_y - projectile.position.y
+    length = Math.sqrt(off_real_x**2 + off_real_y**2)
+    velocity = 480 / 1  # 480 pixels/second
+    real_move_duration = length / velocity
+
+    # Move projectile to actual endpoint
+    action_move = Move.to(:position => real_dest, :duration => real_move_duration)
+    action_move_done = Callback.with do |node|
+      node.removeFromParent
+    end
+    sequence_action = Sequence.with(:actions => [action_move, action_move_done])
+    projectile.run_action(sequence_action)
   end
 end
