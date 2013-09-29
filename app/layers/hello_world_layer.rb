@@ -3,6 +3,8 @@ class HelloWorldLayer < Joybox::Core::LayerColor
   scene
 
   def on_enter
+    @monsters = []
+    @projectiles = []
     window_size = CCDirector.sharedDirector.winSize
 
     player = Sprite.new(:file_name => 'arts/player.png')
@@ -10,7 +12,8 @@ class HelloWorldLayer < Joybox::Core::LayerColor
 
     self << player
 
-    schedule('game_logic', :interval => 1)
+    schedule('game_logic', :interval => 1.0)
+    schedule('update')
 
     on_touches_ended do |touches, event|
       shoot_projectile(touches)
@@ -21,8 +24,36 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     add_monster
   end
 
+  def update
+    projectiles_to_delete = []
+    @projectiles.each do |projectile|
+      monsters_to_delete = []
+      @monsters.each do |monster|
+        if CGRectIntersectsRect(projectile.boundingBox, monster.boundingBox)
+          monsters_to_delete << monster
+        end
+      end
+
+      monsters_to_delete.each do |monster|
+        @monsters.delete(monster)
+        self.removeChild(monster)
+      end
+
+      if monsters_to_delete.size > 0
+        projectiles_to_delete << projectile
+      end
+    end
+
+    projectiles_to_delete.each do |projectile|
+      @projectiles.delete(projectile)
+      self.removeChild(projectile)
+    end
+  end
+
   def add_monster
     monster = Sprite.new(:file_name => 'arts/monster.png')
+    monster.tag = 1
+    @monsters << monster
 
     # Determine where to spawn the monster along the Y axis
     window_size = CCDirector.sharedDirector.winSize
@@ -45,6 +76,7 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     # Create the actions
     action_move = Move.to(:position => [-monster.contentSize.width / 2, actual_y], :duration => actual_duration)
     action_move_done = Callback.with do |node|
+      @monsters.delete(node)
       node.removeFromParent
     end
 
@@ -62,6 +94,8 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     window_size = CCDirector.sharedDirector.winSize
     projectile = Sprite.new(:file_name => 'arts/projectile.png')
     projectile.position = [20, window_size.height / 2]
+    projectile.tag = 2
+    @projectiles << projectile
 
     # Determine offset of location to projectile
     offset = location - projectile.position
@@ -87,6 +121,7 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     # Move projectile to actual endpoint
     action_move = Move.to(:position => real_dest, :duration => real_move_duration)
     action_move_done = Callback.with do |node|
+      @projectiles.delete(node)
       node.removeFromParent
     end
     sequence_action = Sequence.with(:actions => [action_move, action_move_done])
