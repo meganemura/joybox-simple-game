@@ -7,10 +7,10 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     @projectiles = []
     @monster_destroyed = 0
 
-    player = Sprite.new(:file_name => 'arts/player2.png')
-    player.position = [player.contentSize.width.half, Screen.half_height]
+    @player = Sprite.new(:file_name => 'arts/player2.png')
+    @player.position = [@player.contentSize.width.half, Screen.half_height]
 
-    self << player
+    self << @player
 
     schedule('game_logic', :interval => 1.0)
     schedule('update')
@@ -127,6 +127,12 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     length = Math.sqrt(off_real_x**2 + off_real_y**2)
     velocity = 480 / 1  # 480 pixels/second
     real_move_duration = length / velocity
+
+    # Determine angle to face
+    angle_radians = jbpToAngle(jbp(off_real_x, off_real_y))
+    angle_degrees = angle_radians / Math::PI * 180.0  # TODO: Add macro to joybox: `motion/joybox/macros.rb`
+    angle = -1 * angle_degrees
+    @player.rotation = angle
 
     # Move projectile to actual endpoint
     action_move = Move.to(:position => real_dest, :duration => real_move_duration)
