@@ -85,16 +85,16 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     actual_duration = rand() * range_duration + min_duration
 
     # Create the actions
-    action_move = Move.to(:position => [-monster.contentSize.width.half, actual_y], :duration => actual_duration)
-    action_move_done = Callback.with do |node|
+    move_action = Move.to(:position => [-monster.contentSize.width.half, actual_y], :duration => actual_duration)
+    move_action_done = Callback.with do |node|
       @monsters.delete(node)
       node.removeFromParent
       game_over_scene = GameOverLayer.scene_with_won(false)
       Joybox.director.replaceScene(game_over_scene)
     end
 
-    sequence_action = Sequence.with(:actions => [action_move, action_move_done])
-    monster.run_action(sequence_action)
+    move_sequence = Sequence.with(:actions => [move_action, move_action_done])
+    monster.run_action(move_sequence)
   end
 
   def shoot_projectile(touches)
@@ -136,24 +136,24 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     degrees_diff = @player.rotation - angle
     rotate_duration = (degrees_diff / rotate_degrees_per_second).abs
 
-    action_rotate = Rotate.to(:angle => angle, :duration => rotate_duration)
-    action_rotate_done = Callback.with do |node|
+    rotate_action = Rotate.to(:angle => angle, :duration => rotate_duration)
+    rotate_action_done = Callback.with do |node|
       # OK to add now - rotation is finished!
       self << @next_projectile
       @projectiles << @next_projectile
       @next_projectile = nil
     end
-    sequence_rotate = Sequence.with(:actions => [action_rotate, action_rotate_done])
-    @player.run_action(sequence_rotate)
+    rotate_sequence = Sequence.with(:actions => [rotate_action, rotate_action_done])
+    @player.run_action(rotate_sequence)
 
     # Move projectile to actual endpoint
-    action_move = Move.to(:position => real_dest, :duration => real_move_duration)
-    action_move_done = Callback.with do |node|
+    move_action = Move.to(:position => real_dest, :duration => real_move_duration)
+    move_action_done = Callback.with do |node|
       @projectiles.delete(node)
       node.removeFromParent
     end
-    sequence_action = Sequence.with(:actions => [action_move, action_move_done])
-    @next_projectile.run_action(sequence_action)
+    move_sequence = Sequence.with(:actions => [move_action, move_action_done])
+    @next_projectile.run_action(move_sequence)
 
     @next_projectile.tag = 2
 
