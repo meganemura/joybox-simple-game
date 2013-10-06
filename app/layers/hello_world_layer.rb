@@ -7,7 +7,7 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     @projectiles = []
     @monster_destroyed = 0
 
-    player = Sprite.new(:file_name => 'arts/player.png')
+    player = Sprite.new(:file_name => 'arts/player2.png')
     player.position = [player.contentSize.width.half, Screen.half_height]
 
     self << player
@@ -102,7 +102,7 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     location = self.convertTouchToNodeSpace(touch)
 
     # Set up initial location of projectile
-    projectile = Sprite.new(:file_name => 'arts/projectile.png')
+    projectile = Sprite.new(:file_name => 'arts/projectile2.png')
     projectile.position = [20, Screen.half_height]
     projectile.tag = 2
     @projectiles << projectile
