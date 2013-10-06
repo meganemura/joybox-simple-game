@@ -6,10 +6,9 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     @monsters = []
     @projectiles = []
     @monster_destroyed = 0
-    window_size = CCDirector.sharedDirector.winSize
 
     player = Sprite.new(:file_name => 'arts/player.png')
-    player.position = [player.contentSize.width / 2, window_size.height / 2]
+    player.position = [player.contentSize.width.half, Screen.half_height]
 
     self << player
 
@@ -67,15 +66,14 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     @monsters << monster
 
     # Determine where to spawn the monster along the Y axis
-    window_size = CCDirector.sharedDirector.winSize
-    min_y = monster.contentSize.height / 2
-    max_y = window_size.height - monster.contentSize.height / 2
+    min_y = monster.contentSize.height.half
+    max_y = Screen.height - monster.contentSize.height.half
     range_y = max_y - min_y
     actual_y = rand() * range_y + min_y # See arc4random
 
     # Create the monster slightly off-screen along the right edge,
     # and along a random position along the Y axis as calculated above
-    monster.position = [window_size.width + monster.contentSize.width / 2, actual_y]
+    monster.position = [Screen.width + monster.contentSize.width.half, actual_y]
     self << monster
 
     # Determine speed of the monster
@@ -85,7 +83,7 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     actual_duration = rand() * range_duration + min_duration
 
     # Create the actions
-    action_move = Move.to(:position => [-monster.contentSize.width / 2, actual_y], :duration => actual_duration)
+    action_move = Move.to(:position => [-monster.contentSize.width.half, actual_y], :duration => actual_duration)
     action_move_done = Callback.with do |node|
       @monsters.delete(node)
       node.removeFromParent
@@ -104,9 +102,8 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     location = self.convertTouchToNodeSpace(touch)
 
     # Set up initial location of projectile
-    window_size = CCDirector.sharedDirector.winSize
     projectile = Sprite.new(:file_name => 'arts/projectile.png')
-    projectile.position = [20, window_size.height / 2]
+    projectile.position = [20, Screen.half_height]
     projectile.tag = 2
     @projectiles << projectile
 
@@ -119,7 +116,7 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     # Ok to add now - we've double checked position
     self << projectile
 
-    real_x = window_size.width + projectile.contentSize.width / 2
+    real_x = Screen.width + projectile.contentSize.width.half
     ratio = offset.y.to_f / offset.x
     real_y = real_x * ratio + projectile.position.y
     real_dest = [real_x, real_y]

@@ -21,10 +21,9 @@ class GameOverLayer < Joybox::Core::LayerColor
     end
 
     message = won ? "You won!" : "You Lose :["
-    window_size = CCDirector.sharedDirector.winSize
     label = Label.new(:text => message, :font_name => "Arial", :font_size => 32)
     label.color = [0, 0, 0]
-    label.position = [window_size.width / 2, window_size.height / 2]
+    label.position = Screen.center
     layer << label
 
     delay_action = Delay.time(:by => 3.0)
