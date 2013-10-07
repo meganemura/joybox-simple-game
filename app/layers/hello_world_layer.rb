@@ -34,10 +34,16 @@ class HelloWorldLayer < Joybox::Core::LayerColor
   def update
     projectiles_to_delete = []
     @projectiles.each do |projectile|
+      monster_hit = false
       monsters_to_delete = []
       @monsters.each do |monster|
         if CGRectIntersectsRect(projectile.boundingBox, monster.boundingBox)
-          monsters_to_delete << monster
+          monster_hit = true
+          monster.hp -= 1
+          if monster.hp <= 0
+            monsters_to_delete << monster
+          end
+          break
         end
       end
 
@@ -51,8 +57,12 @@ class HelloWorldLayer < Joybox::Core::LayerColor
         end
       end
 
-      if monsters_to_delete.size > 0
+      if monster_hit
         projectiles_to_delete << projectile
+
+        audio_effect = AudioEffect.new
+        audio_effect.add(:effect => :explosion, :file_name => 'sounds/explosion.caf')
+        audio_effect.play(:explosion)
       end
     end
 
@@ -63,7 +73,11 @@ class HelloWorldLayer < Joybox::Core::LayerColor
   end
 
   def add_monster
-    monster = Sprite.new(:file_name => 'arts/monster.png')
+    if rand(2) == 0
+      monster = WeakAndFastMonster.new
+    else
+      monster = StrongAndSlowMonster.new
+    end
     monster.tag = 1
     @monsters << monster
 
@@ -79,8 +93,8 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     self << monster
 
     # Determine speed of the monster
-    min_duration = 2.0
-    max_duration = 4.0
+    min_duration = monster.min_move_duration
+    max_duration = monster.max_move_duration
     range_duration = max_duration - min_duration
     actual_duration = rand() * range_duration + min_duration
 
