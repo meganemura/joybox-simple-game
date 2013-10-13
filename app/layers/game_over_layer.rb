@@ -11,16 +11,23 @@ class GameOverLayer < Joybox::Core::LayerColor
   scene
 
   def self.new(won, options)
-    options = defaults.merge(options)
+    options = defaults.merge(options).merge(:color => [255, 255, 255])
+    layer = super(options)
 
-    layer = self.layerWithColor([255, 255, 255, 255],
-                                :width  => options[:width],
-                                :height => options[:height])
-    if options[:position]
-      layer.position = options[:position]
+    if won
+      LevelManager.instance.next_level
+      current_level = LevelManager.instance.current_level
+      if current_level
+        message = "Get ready for level #{current_level.level_num}!"
+      else
+        message = "You Won!"
+        LevelManager.instance.reset
+      end
+    else
+      message = "You Lose :["
+      LevelManager.instance.reset
     end
 
-    message = won ? "You won!" : "You Lose :["
     label = Label.new(:text => message, :font_name => "Arial", :font_size => 32)
     label.color = [0, 0, 0]
     label.position = Screen.center

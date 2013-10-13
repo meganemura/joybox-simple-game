@@ -2,6 +2,12 @@ class HelloWorldLayer < Joybox::Core::LayerColor
 
   scene
 
+  def self.new(options = {})
+    level_manager = LevelManager.instance
+    options = options.merge(:color => level_manager.current_level.background_color)
+    super(options)
+  end
+
   def on_enter
     @monsters = []
     @monster_destroyed = 0
@@ -24,7 +30,6 @@ class HelloWorldLayer < Joybox::Core::LayerColor
     on_touches_ended do |touches, event|
       shoot_projectile(touches)
     end
-
   end
 
   def game_logic
